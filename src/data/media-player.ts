@@ -44,6 +44,7 @@ interface MediaPlayerEntityAttributes extends HassEntityAttributeBase {
   media_content_type?: string;
   media_artist?: string;
   media_playlist?: string;
+  media_queue?: string[];
   media_series_title?: string;
   media_season?: any;
   media_episode?: any;
@@ -100,6 +101,8 @@ export const enum MediaPlayerEntityFeature {
   BROWSE_MEDIA = 131072,
   REPEAT_SET = 262144,
   GROUPING = 524288,
+
+  MEDIA_QUEUE = 4194304,
 }
 
 export type MediaPlayerBrowseAction = "pick" | "play";
@@ -266,6 +269,32 @@ export const computeMediaDescription = (
   }
 
   return secondaryTitle;
+};
+
+export const computeMediaNextMedia = (
+  stateObj: MediaPlayerEntity
+): string | undefined => {
+  if (!stateObj) {
+    return undefined;
+  }
+  const state = stateObj.state;
+
+  if (isUnavailableState(state)) {
+    return undefined;
+  }
+
+  if (!supportsFeature(stateObj, MediaPlayerEntityFeature.MEDIA_QUEUE)) {
+    return undefined;
+  }
+  const queue = stateObj.attributes.media_queue;
+
+  if (!queue || queue.length === 0) {
+    return undefined;
+  }
+
+  const nextMedia = queue[0];
+
+  return "Next: " + nextMedia;
 };
 
 export const computeMediaControls = (

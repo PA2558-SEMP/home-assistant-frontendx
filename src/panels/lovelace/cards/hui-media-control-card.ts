@@ -28,6 +28,7 @@ import {
   cleanupMediaTitle,
   computeMediaControls,
   computeMediaDescription,
+  computeMediaNextMedia,
   getCurrentProgress,
   handleMediaControlClick,
   MediaPickedEvent,
@@ -189,6 +190,7 @@ export class HuiMediaControlCard extends LitElement implements LovelaceCard {
 
     const mediaDescription = computeMediaDescription(stateObj);
     const mediaTitleClean = cleanupMediaTitle(stateObj.attributes.media_title);
+    const mediaNextMedia = computeMediaNextMedia(stateObj);
 
     return html`
       <ha-card>
@@ -270,6 +272,12 @@ export class HuiMediaControlCard extends LitElement implements LovelaceCard {
                               @mouseleave=${this._marqueeMouseLeave}
                             ></hui-marquee>
                             ${!mediaTitleClean ? "" : mediaDescription}
+                            ${!mediaNextMedia
+                              ? ""
+                              : html`
+                                  <br />
+                                  ${mediaNextMedia}
+                                `}
                           </div>
                         `}
                     ${!showControls
