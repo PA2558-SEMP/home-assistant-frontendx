@@ -274,10 +274,7 @@ export class HuiMediaControlCard extends LitElement implements LovelaceCard {
                             ${!mediaTitleClean ? "" : mediaDescription}
                             ${!mediaNextMedia
                               ? ""
-                              : html`
-                                  <br />
-                                  ${mediaNextMedia}
-                                `}
+                              : html` <div>${mediaNextMedia}</div> `}
                           </div>
                         `}
                     ${!showControls
