@@ -329,13 +329,6 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
         (item) => item.uid,
         (item) => {
           const showDelete = true;
-          // this.todoListSupportsFeature(
-          //   TodoListEntityFeature.DELETE_TODO_ITEM
-          // ) &&
-          // !this.todoListSupportsFeature(
-          //   TodoListEntityFeature.UPDATE_TODO_ITEM
-          // );
-
           const showReorder =
             item.status !== TodoItemStatus.Completed && this._reordering;
           const due = item.due
