@@ -328,13 +328,14 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
         items,
         (item) => item.uid,
         (item) => {
-          const showDelete =
-            this.todoListSupportsFeature(
-              TodoListEntityFeature.DELETE_TODO_ITEM
-            ) &&
-            !this.todoListSupportsFeature(
-              TodoListEntityFeature.UPDATE_TODO_ITEM
-            );
+          const showDelete = true;
+          // this.todoListSupportsFeature(
+          //   TodoListEntityFeature.DELETE_TODO_ITEM
+          // ) &&
+          // !this.todoListSupportsFeature(
+          //   TodoListEntityFeature.UPDATE_TODO_ITEM
+          // );
+
           const showReorder =
             item.status !== TodoItemStatus.Completed && this._reordering;
           const due = item.due
@@ -404,7 +405,7 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                       .title=${this.hass!.localize(
                         "ui.panel.lovelace.cards.todo-list.delete_item"
                       )}
-                      class="deleteItemButton"
+                      class="deleteItemButton red-accent"
                       .path=${mdiDelete}
                       .itemId=${item.uid}
                       slot="meta"
@@ -758,6 +759,10 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
       }
 
       .warning {
+        color: var(--error-color);
+      }
+
+      .red-accent {
         color: var(--error-color);
       }
     `;
