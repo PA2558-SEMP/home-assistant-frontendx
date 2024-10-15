@@ -265,7 +265,38 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                             >
                             </ha-svg-icon>
                           </ha-list-item>
+
+                          ${!this._reordering
+                            ? html` <ha-list-item
+                                @click=${this._toggleReorder}
+                                graphic="icon"
+                              >
+                                ${this.hass!.localize(
+                                  "ui.panel.lovelace.cards.todo-list.sort_by_priority"
+                                )}
+                                <ha-svg-icon
+                                  slot="graphic"
+                                  .path=${mdiSort}
+                                  .disabled=${unavailable}
+                                >
+                                </ha-svg-icon>
+                              </ha-list-item>`
+                            : nothing}
+                          ${!this._reordering
+                            ? html`
+                          <ha-list-item
+                            @click=${this._toggleReorder}
+                            graphic="icon"
+                          >
+                            ${this.hass!.localize(
+                              "ui.panel.lovelace.cards.todo-list.sort_by_date"
+                            )}
+                            <ha-svg-icon slot="graphic" .path=${mdiSort}>
+                            </ha-svg-icon>
+                          </ha-list-item>
                         </ha-button-menu>`
+                            : nothing}</ha-button-menu
+                        >`
                       : nothing}
                   </div>
                   ${this._renderItems(uncheckedItems, unavailable)}

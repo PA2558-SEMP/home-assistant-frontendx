@@ -5383,6 +5383,8 @@
             "today": "Today",
             "reorder_items": "Reorder items",
             "exit_reorder_items": "Exit reorder mode",
+            "sort_by_date": "Sort by date",
+            "sort_by_priority": "Sort by priority",
             "drag_and_drop": "Drag and drop",
             "delete_item": "Delete item",
             "delete_confirm_title": "Remove completed items?",
