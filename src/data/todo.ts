@@ -30,6 +30,8 @@ export const enum TodoListEntityFeature {
   SET_DUE_DATE_ON_ITEM = 16,
   SET_DUE_DATETIME_ON_ITEM = 32,
   SET_DESCRIPTION_ON_ITEM = 64,
+  SORT_BY_DATE_ITEM = 128,
+  SORT_BY_PRIORITY_ITEM = 256,
 }
 
 export const getTodoLists = (hass: HomeAssistant): TodoList[] =>
@@ -43,6 +45,7 @@ export const getTodoLists = (hass: HomeAssistant): TodoList[] =>
       ...hass.states[entityId],
       entity_id: entityId,
       name: computeStateName(hass.states[entityId]),
+      priority: computeStateName(hass.states[entityId]),
     }))
     .sort((a, b) => stringCompare(a.name, b.name, hass.locale.language));
 
@@ -138,4 +141,22 @@ export const moveItem = (
     entity_id,
     uid,
     previous_uid,
+  });
+
+export const sortItemsByDate = (
+  hass: HomeAssistant,
+  entity_id: string
+): Promise<void> =>
+  hass.callWS({
+    type: "todo/item/sortDate",
+    entity_id,
+  });
+
+export const sortItemsByPriority = (
+  hass: HomeAssistant,
+  entity_id: string
+): Promise<void> =>
+  hass.callWS({
+    type: "todo/item/sortPriority",
+    entity_id,
   });
