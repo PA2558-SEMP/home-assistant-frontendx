@@ -288,27 +288,13 @@ export const computeMediaDescription = (
 };
 
 export const computeMediaNextMedia = (
-  stateObj: MediaPlayerEntity
+  media_queue?: MediaPlayerQueueItem[]
 ): string | undefined => {
-  if (!stateObj) {
-    return undefined;
-  }
-  const state = stateObj.state;
-
-  if (isUnavailableState(state)) {
+  if (!media_queue || media_queue.length === 0) {
     return undefined;
   }
 
-  if (!supportsFeature(stateObj, MediaPlayerEntityFeature.MEDIA_QUEUE)) {
-    return undefined;
-  }
-  const queue = stateObj.attributes.media_queue;
-
-  if (!queue || queue.length === 0) {
-    return undefined;
-  }
-
-  const { media_title } = queue[0];
+  const { media_title } = media_queue[0];
 
   if (!media_title) {
     return undefined;

@@ -17,18 +17,23 @@ class StateCardMediaPlayer extends LitElement {
   protected render(): TemplateResult {
     const playerObj = new HassMediaPlayerEntity(this.hass, this.stateObj);
     return html`
-      <div class="horizontal justified layout">
-        <state-info
-          .hass=${this.hass}
-          .stateObj=${this.stateObj}
-          .inDialog=${this.inDialog}
-        ></state-info>
-        <div class="state">
-          <div class="main-text" take-height=${!playerObj.secondaryTitle}>
-            ${this._computePrimaryText(playerObj)}
+      <div>
+        <div class="horizontal justified layout">
+          <state-info
+            .hass=${this.hass}
+            .stateObj=${this.stateObj}
+            .inDialog=${this.inDialog}
+          ></state-info>
+          <div class="state">
+            <div class="main-text" take-height=${!playerObj.secondaryTitle}>
+              ${this._computePrimaryText(playerObj)}
+            </div>
+            <div class="secondary-text">${playerObj.secondaryTitle}</div>
           </div>
-          <div class="secondary-text">${playerObj.secondaryTitle}</div>
         </div>
+        ${playerObj.nextMedia
+          ? html`<div class="media-next">${playerObj.nextMedia}</div>`
+          : ""}
       </div>
     `;
   }
@@ -64,6 +69,12 @@ class StateCardMediaPlayer extends LitElement {
 
         .secondary-text {
           color: var(--secondary-text-color);
+        }
+
+        .media-next {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
       `,
     ];

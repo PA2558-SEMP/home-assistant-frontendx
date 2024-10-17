@@ -190,7 +190,9 @@ export class HuiMediaControlCard extends LitElement implements LovelaceCard {
 
     const mediaDescription = computeMediaDescription(stateObj);
     const mediaTitleClean = cleanupMediaTitle(stateObj.attributes.media_title);
-    const mediaNextMedia = computeMediaNextMedia(stateObj);
+    const mediaNextMedia = computeMediaNextMedia(
+      stateObj.attributes.media_queue
+    );
 
     return html`
       <ha-card>

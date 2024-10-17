@@ -1,6 +1,6 @@
 import { HassEntity } from "home-assistant-js-websocket";
 import { supportsFeature } from "../common/entity/supports-feature";
-import { cleanupMediaTitle } from "../data/media-player";
+import { cleanupMediaTitle, computeMediaNextMedia } from "../data/media-player";
 import { HomeAssistant } from "../types";
 
 export default class MediaPlayerEntity {
@@ -122,6 +122,10 @@ export default class MediaPlayerEntity {
     return supportsFeature(this.stateObj, 16384);
   }
 
+  get supportsQueue() {
+    return supportsFeature(this.stateObj, 4194304);
+  }
+
   get primaryTitle() {
     return cleanupMediaTitle(this._attr.media_title);
   }
@@ -147,6 +151,10 @@ export default class MediaPlayerEntity {
       return this._attr.app_name;
     }
     return "";
+  }
+
+  get nextMedia() {
+    return computeMediaNextMedia(this._attr.media_queue);
   }
 
   get source() {
