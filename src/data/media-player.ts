@@ -44,6 +44,7 @@ interface MediaPlayerEntityAttributes extends HassEntityAttributeBase {
   media_content_type?: string;
   media_artist?: string;
   media_playlist?: string;
+  media_queue?: MediaPlayerQueueItem[];
   media_series_title?: string;
   media_season?: any;
   media_episode?: any;
@@ -63,6 +64,22 @@ interface MediaPlayerEntityAttributes extends HassEntityAttributeBase {
   source_list?: string[];
   sound_mode?: string;
   sound_mode_list?: string[];
+}
+
+export interface MediaPlayerQueueItemCreator {
+  name?: string;
+  id?: string;
+  creator_type?: string;
+}
+
+export interface MediaPlayerQueueItem {
+  media_title?: string;
+  media_type?: string;
+  media_id?: string;
+  image?: string;
+  href?: string;
+  duration_ms?: number;
+  media_creators?: MediaPlayerQueueItemCreator[];
 }
 
 export interface MediaPlayerEntity extends HassEntityBase {
@@ -100,6 +117,8 @@ export const enum MediaPlayerEntityFeature {
   BROWSE_MEDIA = 131072,
   REPEAT_SET = 262144,
   GROUPING = 524288,
+
+  MEDIA_QUEUE = 4194304,
 }
 
 export type MediaPlayerBrowseAction = "pick" | "play";
@@ -266,6 +285,24 @@ export const computeMediaDescription = (
   }
 
   return secondaryTitle;
+};
+
+export const computeMediaNextMedia = (
+  media_queue?: MediaPlayerQueueItem[]
+): string | undefined => {
+  if (!media_queue || media_queue.length === 0) {
+    return undefined;
+  }
+
+  const { media_title } = media_queue[0];
+
+  if (!media_title) {
+    return undefined;
+  }
+
+  // Change to Localization
+  //        v
+  return `Next: ${media_title}`;
 };
 
 export const computeMediaControls = (
