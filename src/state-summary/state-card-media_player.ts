@@ -32,7 +32,11 @@ class StateCardMediaPlayer extends LitElement {
           </div>
         </div>
         ${playerObj.nextMedia
-          ? html`<div class="media-next">${playerObj.nextMedia}</div>`
+          ? html`<div class="media-next">
+            <span>
+            ${playerObj.nextMedia}
+            </span>
+          </div>`
           : ""}
       </div>
     `;
@@ -72,10 +76,34 @@ class StateCardMediaPlayer extends LitElement {
         }
 
         .media-next {
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        width: 8rem;
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
         }
+
+
+        .media-next span {
+          display: inline-block;
+          padding-left: 0; 
+          animation: scroll-text 16s linear infinite;
+        }
+
+        @keyframes scroll-text {
+          0% {
+            transform: translateX(100%);
+          }
+          70% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+
+
       `,
     ];
   }
