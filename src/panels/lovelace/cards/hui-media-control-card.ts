@@ -276,7 +276,9 @@ export class HuiMediaControlCard extends LitElement implements LovelaceCard {
                             ${!mediaTitleClean ? "" : mediaDescription}
                             ${!mediaNextMedia
                               ? ""
-                              : html` <div>${mediaNextMedia}</div> `}
+                              : html` <div class="next-song">
+                                <span>${mediaNextMedia}</span>
+                              </div> `}
                           </div>
                         `}
                     ${!showControls
@@ -813,8 +815,34 @@ export class HuiMediaControlCard extends LitElement implements LovelaceCard {
         --mdc-icon-size: 24px;
       }
 
-      .no-progress.player:not(.no-controls) {
-        padding-bottom: 0px;
+  
+
+      .next-song {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      width: 8rem;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      }
+
+   
+    .next-song span {
+      display: inline-block;
+      padding-left: 0; 
+      animation: scroll-text 16s linear infinite;
+    }
+
+      @keyframes scroll-text {
+        0% {
+          transform: translateX(100%);
+        }
+        70% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
       }
     `;
   }
