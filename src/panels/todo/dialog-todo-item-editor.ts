@@ -141,11 +141,11 @@ class DialogTodoItemEditor extends LitElement {
               .disabled=${!canUpdate}
             ></ha-textfield>
           </div>
-          ${this._todoListSupportsFeature(
-            TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
-          )
-            ? html` <div class="flex-row">
-                <ha-textarea
+          <div class="flex-row">
+            ${this._todoListSupportsFeature(
+              TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+            )
+              ? html` <ha-textarea
                   class="description"
                   name="description"
                   .label=${this.hass.localize(
@@ -155,8 +155,12 @@ class DialogTodoItemEditor extends LitElement {
                   @input=${this._handleDescriptionChanged}
                   autogrow
                   .disabled=${!canUpdate}
-                ></ha-textarea>
-                <div class="priority-column">
+                ></ha-textarea>`
+              : nothing}
+            ${this._todoListSupportsFeature(
+              TodoListEntityFeature.SET_PRIORITY_ON_ITEM
+            )
+              ? html` <div class="priority-column">
                   <span class="priority-label">Priority:</span>
                   <ha-select
                     class="priority"
@@ -169,13 +173,19 @@ class DialogTodoItemEditor extends LitElement {
                     @closed=${stopPropagation}
                     .disabled=${!canUpdate}
                   >
-                    <mwc-list-item value="LOW">LOW</mwc-list-item>
-                    <mwc-list-item value="MEDIUM">MEDIUM</mwc-list-item>
-                    <mwc-list-item value="HIGH">HIGH</mwc-list-item>
+                    <mwc-list-item value=${TodoItemPriority.LOW}
+                      >LOW</mwc-list-item
+                    >
+                    <mwc-list-item value=${TodoItemPriority.MEDIUM}
+                      >MEDIUM</mwc-list-item
+                    >
+                    <mwc-list-item value=${TodoItemPriority.HIGH}
+                      >HIGH</mwc-list-item
+                    >
                   </ha-select>
-                </div>
-              </div>`
-            : nothing}
+                </div>`
+              : nothing}
+          </div>
           ${this._todoListSupportsFeature(
             TodoListEntityFeature.SET_DUE_DATE_ON_ITEM
           ) ||
