@@ -14,12 +14,20 @@ export const enum TodoItemStatus {
   Completed = "completed",
 }
 
+// The priority for a todo item.
+export const enum TodoItemPriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}
+
 export interface TodoItem {
   uid: string;
   summary: string;
   status: TodoItemStatus;
   description?: string | null;
   due?: string | null;
+  priority?: TodoItemPriority | null;
 }
 
 export const enum TodoListEntityFeature {
@@ -89,6 +97,7 @@ export const updateItem = (
         item.due === undefined || item.due?.includes("T")
           ? undefined
           : item.due,
+      priority: item.priority,
     },
     { entity_id }
   );
@@ -109,6 +118,7 @@ export const createItem = (
         item.due === undefined || item.due?.includes("T")
           ? undefined
           : item.due,
+      priority: item.priority || TodoItemPriority.MEDIUM,
     },
     { entity_id }
   );

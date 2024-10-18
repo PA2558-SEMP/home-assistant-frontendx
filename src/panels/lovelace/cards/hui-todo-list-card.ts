@@ -8,6 +8,7 @@ import {
   mdiDrag,
   mdiPlus,
   mdiSort,
+  mdiSortVariant,
 } from "@mdi/js";
 import { endOfDay, isSameDay } from "date-fns";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
@@ -261,6 +262,15 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                             <ha-svg-icon
                               slot="graphic"
                               .path=${mdiSort}
+                              .disabled=${unavailable}
+                            >
+                            </ha-svg-icon>
+                          </ha-list-item>
+                          <ha-list-item @click=${this._autoSort} graphic="icon">
+                            Sort Automatically
+                            <ha-svg-icon
+                              slot="graphic"
+                              .path=${mdiSortVariant}
                               .disabled=${unavailable}
                             >
                             </ha-svg-icon>
@@ -553,6 +563,12 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
 
   private async _toggleReorder() {
     this._reordering = !this._reordering;
+  }
+
+  private async _autoSort() {
+    console.log("auto sort");
+
+    //TODO: connect the autosort service from core
   }
 
   private async _itemMoved(ev: CustomEvent) {
