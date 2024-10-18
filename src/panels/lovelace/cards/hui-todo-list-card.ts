@@ -47,6 +47,8 @@ import {
   createItem,
   deleteItems,
   moveItem,
+  sortItemsByDate,
+  sortItemsByPriority,
   subscribeItems,
   updateItem,
 } from "../../../data/todo";
@@ -265,7 +267,38 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                             >
                             </ha-svg-icon>
                           </ha-list-item>
+
+                          ${!this._reordering
+                            ? html` <ha-list-item
+                                @click=${this._sortByPriority}
+                                graphic="icon"
+                              >
+                                ${this.hass!.localize(
+                                  "ui.panel.lovelace.cards.todo-list.sort_by_priority"
+                                )}
+                                <ha-svg-icon
+                                  slot="graphic"
+                                  .path=${mdiSort}
+                                  .disabled=${unavailable}
+                                >
+                                </ha-svg-icon>
+                              </ha-list-item>`
+                            : nothing}
+                          ${!this._reordering
+                            ? html`
+                          <ha-list-item
+                            @click=${this._sortByDate}
+                            graphic="icon"
+                          >
+                            ${this.hass!.localize(
+                              "ui.panel.lovelace.cards.todo-list.sort_by_date"
+                            )}
+                            <ha-svg-icon slot="graphic" .path=${mdiSort}>
+                            </ha-svg-icon>
+                          </ha-list-item>
                         </ha-button-menu>`
+                            : nothing}</ha-button-menu
+                        >`
                       : nothing}
                   </div>
                   ${this._renderItems(uncheckedItems, unavailable)}
@@ -565,6 +598,14 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
     ev.stopPropagation();
     const { oldIndex, newIndex } = ev.detail;
     this._moveItem(oldIndex, newIndex);
+  }
+
+  private async _sortByDate() {
+    await sortItemsByDate(this.hass!, this._entityId!);
+  }
+
+  private async _sortByPriority() {
+    await sortItemsByPriority(this.hass!, this._entityId!);
   }
 
   private async _moveItem(oldIndex: number, newIndex: number) {
