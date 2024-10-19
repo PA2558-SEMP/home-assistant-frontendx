@@ -1,6 +1,6 @@
 import "@material/mwc-button";
 import { formatInTimeZone, toDate } from "date-fns-tz";
-import { CSSResultGroup, LitElement, css, html, nothing } from "lit";
+import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import memoizeOne from "memoize-one";
 import { resolveTimeZone } from "../../common/datetime/resolve-time-zone";
@@ -15,12 +15,12 @@ import "../../components/ha-textfield";
 import "../../components/ha-time-input";
 import { stopPropagation } from "../../common/dom/stop_propagation";
 import {
-  TodoItemPriority,
-  TodoItemStatus,
-  TodoListEntityFeature,
   createItem,
   deleteItems,
   updateItem,
+  TodoItemStatus,
+  TodoListEntityFeature,
+  TodoPriority,
 } from "../../data/todo";
 import { showConfirmationDialog } from "../../dialogs/generic/show-dialog-box";
 import { haStyleDialog } from "../../resources/styles";
@@ -39,7 +39,7 @@ class DialogTodoItemEditor extends LitElement {
 
   @state() private _description? = "";
 
-  @state() private _priority = "";
+  @state() private _priority = TodoPriority.medium;
 
   @state() private _due?: Date;
 
@@ -67,7 +67,7 @@ class DialogTodoItemEditor extends LitElement {
       this._checked = entry.status === TodoItemStatus.Completed;
       this._summary = entry.summary;
       this._description = entry.description || "";
-      this._priority = entry.priority || TodoItemPriority.MEDIUM;
+      this._priority = entry.priority ?? TodoPriority.medium;
       this._hasTime = entry.due?.includes("T") || false;
       this._due = entry.due
         ? new Date(this._hasTime ? entry.due : `${entry.due}T00:00:00`)
@@ -89,6 +89,7 @@ class DialogTodoItemEditor extends LitElement {
     this._summary = "";
     this._description = "";
     this._hasTime = false;
+    this._priority = this._priority ?? TodoPriority.medium;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
@@ -118,7 +119,7 @@ class DialogTodoItemEditor extends LitElement {
       >
         <div class="content">
           ${this._error
-            ? html`<ha-alert alert-type="error">${this._error}</ha-alert>`
+            ? html` <ha-alert alert-type="error">${this._error}</ha-alert>`
             : ""}
 
           <div class="flex">
@@ -165,23 +166,31 @@ class DialogTodoItemEditor extends LitElement {
                   <ha-select
                     class="priority"
                     name="priority"
-                    .value=${this._priority == null
-                      ? "Priority"
-                      : this._priority}
-                    placeholder="Select priority"
+                    .value=${this._priority != null
+                      ? this._priority
+                      : TodoPriority.medium}
+                    placeholder=${this.hass.localize(
+                      "ui.components.todo.item.select_priority"
+                    )}
                     @change=${this._handlePriorityChanged}
                     @closed=${stopPropagation}
                     .disabled=${!canUpdate}
                   >
-                    <mwc-list-item value=${TodoItemPriority.LOW}
-                      >LOW</mwc-list-item
+                    <mwc-list-item value=${TodoPriority.low}
+                      >${this.hass.localize(
+                        "ui.components.todo.item.low_priority"
+                      )}</mwc-list-item
                     >
-                    <mwc-list-item value=${TodoItemPriority.MEDIUM}
-                      >MEDIUM</mwc-list-item
-                    >
-                    <mwc-list-item value=${TodoItemPriority.HIGH}
-                      >HIGH</mwc-list-item
-                    >
+                    <mwc-list-item value=${TodoPriority.medium}
+                      >${this.hass.localize(
+                        "ui.components.todo.item.medium_priority"
+                      )}
+                    </mwc-list-item>
+                    <mwc-list-item value=${TodoPriority.high}
+                      >${this.hass.localize(
+                        "ui.components.todo.item.high_priority"
+                      )}
+                    </mwc-list-item>
                   </ha-select>
                 </div>`
               : nothing}
@@ -192,7 +201,7 @@ class DialogTodoItemEditor extends LitElement {
           this._todoListSupportsFeature(
             TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
           )
-            ? html`<div>
+            ? html` <div>
                 <span class="label"
                   >${this.hass.localize("ui.components.todo.item.due")}:</span
                 >
@@ -207,7 +216,7 @@ class DialogTodoItemEditor extends LitElement {
                   ${this._todoListSupportsFeature(
                     TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
                   )
-                    ? html`<ha-time-input
+                    ? html` <ha-time-input
                         .value=${dueTime}
                         .locale=${this.hass.locale}
                         .disabled=${!canUpdate}
@@ -317,19 +326,6 @@ class DialogTodoItemEditor extends LitElement {
   }
 
   // get TodoItemPriority from the selected option
-  private _getPriority() {
-    switch (this._priority) {
-      case "low":
-        return TodoItemPriority.LOW;
-      case "medium":
-        return TodoItemPriority.MEDIUM;
-      case "high":
-        return TodoItemPriority.HIGH;
-      default:
-        return TodoItemPriority.MEDIUM;
-    }
-  }
-
   private _handlePriorityChanged(ev: Event) {
     ev.preventDefault();
     const select = ev.target as HTMLSelectElement;
@@ -354,7 +350,7 @@ class DialogTodoItemEditor extends LitElement {
             ? this._due.toISOString()
             : this._formatDate(this._due)
           : undefined,
-        priority: this._getPriority(),
+        priority: this._priority,
       });
     } catch (err: any) {
       this._error = err ? err.message : "Unknown error";
@@ -402,7 +398,7 @@ class DialogTodoItemEditor extends LitElement {
         status: this._checked
           ? TodoItemStatus.Completed
           : TodoItemStatus.NeedsAction,
-        priority: this._getPriority(),
+        priority: this._priority,
       });
     } catch (err: any) {
       this._error = err ? err.message : "Unknown error";
