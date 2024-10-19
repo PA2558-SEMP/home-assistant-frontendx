@@ -14,12 +14,20 @@ export const enum TodoItemStatus {
   Completed = "completed",
 }
 
+// The priority for a todo item.
+export const enum TodoPriority {
+  low = "low",
+  medium = "medium",
+  high = "high",
+}
+
 export interface TodoItem {
   uid: string;
   summary: string;
   status: TodoItemStatus;
   description?: string | null;
   due?: string | null;
+  priority?: TodoPriority | TodoPriority.medium;
 }
 
 export const enum TodoListEntityFeature {
@@ -32,6 +40,7 @@ export const enum TodoListEntityFeature {
   SET_DESCRIPTION_ON_ITEM = 64,
   SORT_BY_DATE_ITEM = 128,
   SORT_BY_PRIORITY_ITEM = 256,
+  SET_PRIORITY_ON_ITEM = 512,
 }
 
 export const getTodoLists = (hass: HomeAssistant): TodoList[] =>
@@ -92,6 +101,7 @@ export const updateItem = (
         item.due === undefined || item.due?.includes("T")
           ? undefined
           : item.due,
+      priority: item.priority ?? undefined,
     },
     { entity_id }
   );
@@ -112,6 +122,7 @@ export const createItem = (
         item.due === undefined || item.due?.includes("T")
           ? undefined
           : item.due,
+      priority: item.priority ?? undefined,
     },
     { entity_id }
   );

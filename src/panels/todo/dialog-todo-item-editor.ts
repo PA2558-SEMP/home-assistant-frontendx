@@ -1,6 +1,6 @@
 import "@material/mwc-button";
 import { formatInTimeZone, toDate } from "date-fns-tz";
-import { CSSResultGroup, LitElement, css, html, nothing } from "lit";
+import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import memoizeOne from "memoize-one";
 import { resolveTimeZone } from "../../common/datetime/resolve-time-zone";
@@ -13,12 +13,14 @@ import { createCloseHeading } from "../../components/ha-dialog";
 import "../../components/ha-textarea";
 import "../../components/ha-textfield";
 import "../../components/ha-time-input";
+import { stopPropagation } from "../../common/dom/stop_propagation";
 import {
-  TodoItemStatus,
-  TodoListEntityFeature,
   createItem,
   deleteItems,
   updateItem,
+  TodoItemStatus,
+  TodoListEntityFeature,
+  TodoPriority,
 } from "../../data/todo";
 import { showConfirmationDialog } from "../../dialogs/generic/show-dialog-box";
 import { haStyleDialog } from "../../resources/styles";
@@ -36,6 +38,8 @@ class DialogTodoItemEditor extends LitElement {
   @state() private _summary = "";
 
   @state() private _description? = "";
+
+  @state() private _priority = TodoPriority.medium;
 
   @state() private _due?: Date;
 
@@ -63,6 +67,7 @@ class DialogTodoItemEditor extends LitElement {
       this._checked = entry.status === TodoItemStatus.Completed;
       this._summary = entry.summary;
       this._description = entry.description || "";
+      this._priority = entry.priority ?? TodoPriority.medium;
       this._hasTime = entry.due?.includes("T") || false;
       this._due = entry.due
         ? new Date(this._hasTime ? entry.due : `${entry.due}T00:00:00`)
@@ -84,6 +89,7 @@ class DialogTodoItemEditor extends LitElement {
     this._summary = "";
     this._description = "";
     this._hasTime = false;
+    this._priority = this._priority ?? TodoPriority.medium;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
@@ -113,7 +119,7 @@ class DialogTodoItemEditor extends LitElement {
       >
         <div class="content">
           ${this._error
-            ? html`<ha-alert alert-type="error">${this._error}</ha-alert>`
+            ? html` <ha-alert alert-type="error">${this._error}</ha-alert>`
             : ""}
 
           <div class="flex">
@@ -136,28 +142,66 @@ class DialogTodoItemEditor extends LitElement {
               .disabled=${!canUpdate}
             ></ha-textfield>
           </div>
-          ${this._todoListSupportsFeature(
-            TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
-          )
-            ? html`<ha-textarea
-                class="description"
-                name="description"
-                .label=${this.hass.localize(
-                  "ui.components.todo.item.description"
-                )}
-                .value=${this._description}
-                @input=${this._handleDescriptionChanged}
-                autogrow
-                .disabled=${!canUpdate}
-              ></ha-textarea>`
-            : nothing}
+          <div class="flex-row">
+            ${this._todoListSupportsFeature(
+              TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
+            )
+              ? html` <ha-textarea
+                  class="description"
+                  name="description"
+                  .label=${this.hass.localize(
+                    "ui.components.todo.item.description"
+                  )}
+                  .value=${this._description}
+                  @input=${this._handleDescriptionChanged}
+                  autogrow
+                  .disabled=${!canUpdate}
+                ></ha-textarea>`
+              : nothing}
+            ${this._todoListSupportsFeature(
+              TodoListEntityFeature.SET_PRIORITY_ON_ITEM
+            )
+              ? html` <div class="priority-column">
+                  <span class="priority-label">Priority:</span>
+                  <ha-select
+                    class="priority"
+                    name="priority"
+                    .value=${this._priority != null
+                      ? this._priority
+                      : TodoPriority.medium}
+                    placeholder=${this.hass.localize(
+                      "ui.components.todo.item.select_priority"
+                    )}
+                    @change=${this._handlePriorityChanged}
+                    @closed=${stopPropagation}
+                    .disabled=${!canUpdate}
+                  >
+                    <mwc-list-item value=${TodoPriority.low}
+                      >${this.hass.localize(
+                        "ui.components.todo.item.low_priority"
+                      )}</mwc-list-item
+                    >
+                    <mwc-list-item value=${TodoPriority.medium}
+                      >${this.hass.localize(
+                        "ui.components.todo.item.medium_priority"
+                      )}
+                    </mwc-list-item>
+                    <mwc-list-item value=${TodoPriority.high}
+                      >${this.hass.localize(
+                        "ui.components.todo.item.high_priority"
+                      )}
+                    </mwc-list-item>
+                  </ha-select>
+                </div>`
+              : nothing}
+          </div>
           ${this._todoListSupportsFeature(
             TodoListEntityFeature.SET_DUE_DATE_ON_ITEM
           ) ||
           this._todoListSupportsFeature(
             TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
           )
-            ? html`<div>
+            ? html` <div>
                 <span class="label"
                   >${this.hass.localize("ui.components.todo.item.due")}:</span
                 >
@@ -172,7 +216,7 @@ class DialogTodoItemEditor extends LitElement {
                   ${this._todoListSupportsFeature(
                     TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
                   )
-                    ? html`<ha-time-input
+                    ? html` <ha-time-input
                         .value=${dueTime}
                         .locale=${this.hass.locale}
                         .disabled=${!canUpdate}
@@ -281,6 +325,13 @@ class DialogTodoItemEditor extends LitElement {
     );
   }
 
+  // get TodoItemPriority from the selected option
+  private _handlePriorityChanged(ev: Event) {
+    ev.preventDefault();
+    const select = ev.target as HTMLSelectElement;
+    this._priority = select.value;
+  }
+
   private async _createItem() {
     if (!this._summary) {
       this._error = this.hass.localize(
@@ -299,6 +350,7 @@ class DialogTodoItemEditor extends LitElement {
             ? this._due.toISOString()
             : this._formatDate(this._due)
           : undefined,
+        priority: this._priority,
       });
     } catch (err: any) {
       this._error = err ? err.message : "Unknown error";
@@ -346,6 +398,7 @@ class DialogTodoItemEditor extends LitElement {
         status: this._checked
           ? TodoItemStatus.Completed
           : TodoItemStatus.NeedsAction,
+        priority: this._priority,
       });
     } catch (err: any) {
       this._error = err ? err.message : "Unknown error";
@@ -394,41 +447,51 @@ class DialogTodoItemEditor extends LitElement {
             --mdc-dialog-max-width: min(600px, 95vw);
           }
         }
+
         ha-alert {
           display: block;
           margin-bottom: 16px;
         }
+
         ha-textfield,
         ha-textarea {
           display: block;
           width: 100%;
         }
+
         ha-checkbox {
           margin-top: 4px;
         }
+
         ha-textarea {
           margin-bottom: 16px;
         }
+
         ha-date-input {
           flex-grow: 1;
         }
+
         ha-time-input {
           margin-left: 16px;
           margin-inline-start: 16px;
           margin-inline-end: initial;
         }
+
         .flex {
           display: flex;
           justify-content: space-between;
         }
+
         .label {
           font-size: 12px;
           font-weight: 500;
           color: var(--input-label-ink-color);
         }
+
         .date-range-details-content {
           display: inline-block;
         }
+
         ha-svg-icon {
           width: 40px;
           margin-right: 8px;
@@ -437,13 +500,48 @@ class DialogTodoItemEditor extends LitElement {
           direction: var(--direction);
           vertical-align: top;
         }
+
         .key {
           display: inline-block;
           vertical-align: top;
         }
+
         .value {
           display: inline-block;
           vertical-align: top;
+        }
+
+        .flex-row {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+        }
+
+        .description {
+          margin-right: 4px;
+          width: 70%;
+          overflow: hidden;
+        }
+
+        .priority-column {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          align-self: flex-end;
+          flex-grow: 1;
+          margin-bottom: 2px;
+        }
+
+        .priority-label {
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--input-label-ink-color);
+          margin-bottom: 0px;
+        }
+
+        .priority {
+          height: 70px;
         }
       `,
     ];

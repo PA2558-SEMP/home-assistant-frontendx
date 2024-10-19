@@ -8,6 +8,7 @@ import {
   mdiDrag,
   mdiPlus,
   mdiSort,
+  mdiSortVariant,
 } from "@mdi/js";
 import { endOfDay, isSameDay } from "date-fns";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
@@ -267,7 +268,6 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                             >
                             </ha-svg-icon>
                           </ha-list-item>
-
                           ${!this._reordering
                             ? html` <ha-list-item
                                 @click=${this._sortByPriority}
